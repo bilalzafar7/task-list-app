@@ -29,4 +29,14 @@ ul {
 
 li {
   margin: 10px 0;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+li:hover {
+  text-decoration: underline;
+}
+
+div {
+  margin-top: 20px;
 }
