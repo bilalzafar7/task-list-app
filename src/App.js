@@ -7,6 +7,7 @@ function App() {
     'Learn React',
     'Build a project',
     'Write documentation'
+    
   ]);
   
   const [newTask, setNewTask] = useState('');
