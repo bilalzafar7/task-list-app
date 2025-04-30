@@ -1,20 +1,20 @@
 import React, { useState } from 'react';
-import TaskList from './components/TaskList'; // Import the TaskList component
-import './App.css'; // Import CSS for styling
+import TaskList from './components/TaskList';
+import './App.css';
 
 function App() {
   const [tasks, setTasks] = useState([
     'Learn React',
     'Build a project',
     'Write documentation'
-    
   ]);
-  
+
   const [newTask, setNewTask] = useState('');
   const [editTask, setEditTask] = useState('');
   const [editingIndex, setEditingIndex] = useState(null);
+  const [completed, setCompleted] = useState([]);
+  const [filter, setFilter] = useState('all'); // all | active | completed
 
-  // Add a new task
   const handleAddTask = () => {
     if (newTask.trim() !== '') {
       setTasks([...tasks, newTask]);
@@ -22,13 +22,11 @@ function App() {
     }
   };
 
-  // Set task for editing when clicked
   const handleClickTask = (task, index) => {
     setEditingIndex(index);
     setEditTask(task);
   };
 
-  // Update the task
   const handleUpdateTask = () => {
     if (editTask.trim() !== '') {
       const updatedTasks = [...tasks];
@@ -39,51 +37,87 @@ function App() {
     }
   };
 
-  // Delete the task
   const handleDeleteTask = () => {
     const updatedTasks = tasks.filter((_, index) => index !== editingIndex);
     setTasks(updatedTasks);
-    setEditingIndex(null); // Clear the editing state
+    setCompleted(completed.filter(i => i !== editingIndex));
+    setEditingIndex(null);
     setEditTask('');
   };
 
-  // Remove all tasks
   const handleRemoveAllTasks = () => {
     setTasks([]);
+    setCompleted([]);
+    setEditingIndex(null);
+    setEditTask('');
+  };
+
+  const handleClearCompleted = () => {
+    const newTasks = tasks.filter((_, i) => !completed.includes(i));
+    setTasks(newTasks);
+    setCompleted([]);
+  };
+
+  const handleToggleComplete = (index) => {
+    setCompleted(prev =>
+      prev.includes(index)
+        ? prev.filter(i => i !== index)
+        : [...prev, index]
+    );
+  };
+
+  const getFilteredTasks = () => {
+    return tasks.filter((_, index) => {
+      if (filter === 'completed') return completed.includes(index);
+      if (filter === 'active') return !completed.includes(index);
+      return true;
+    });
   };
 
   return (
     <div className="App">
       <h1>Task List</h1>
 
-      {/* Input field to add new tasks */}
       <input
         type="text"
         value={newTask}
-        onChange={(e) => setNewTask(e.target.value)}
         placeholder="Enter new task"
+        onChange={(e) => setNewTask(e.target.value)}
+        onKeyDown={(e) => e.key === 'Enter' && handleAddTask()}
       />
       <button onClick={handleAddTask}>Add Task</button>
 
-      {/* Render Task List component */}
-      <TaskList tasks={tasks} onClickTask={handleClickTask} />
+      <div className="filters">
+        <button onClick={() => setFilter('all')}>All</button>
+        <button onClick={() => setFilter('active')}>Active</button>
+        <button onClick={() => setFilter('completed')}>Completed</button>
+      </div>
 
-      {/* Only show this part if a task is being edited */}
+      <TaskList
+        tasks={getFilteredTasks()}
+        onClickTask={handleClickTask}
+        onToggleComplete={handleToggleComplete}
+        completed={completed}
+        editingIndex={editingIndex}
+      />
+
       {editingIndex !== null && (
         <div>
           <input
             type="text"
             value={editTask}
-            onChange={(e) => setEditTask(e.target.value)}
             placeholder="Update task"
+            onChange={(e) => setEditTask(e.target.value)}
           />
-          <button onClick={handleUpdateTask}>Update Task</button>
-          <button onClick={handleDeleteTask}>Delete Task</button>
+          <button onClick={handleUpdateTask}>Update</button>
+          <button onClick={handleDeleteTask}>Delete</button>
         </div>
       )}
 
-      {/* Delete all tasks */}
-      <button onClick={handleRemoveAllTasks}>Delete All Tasks</button>
+      <div className="footer-buttons">
+        <button onClick={handleClearCompleted}>Clear Completed</button>
+        <button onClick={handleRemoveAllTasks}>Delete All</button>
+      </div>
     </div>
   );
 }
